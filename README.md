@@ -67,5 +67,9 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Project Members
 - Student ID: 6360302
 
-## Uml models
+## UML Class Diagrams and Documentation
+
+These UML diagrams offer a comprehensive visualization of the system's architecture, including the structure and relationships between various components.
+The `uml_models` directory contains all the UML class diagrams and accompanying documentation. You can explore these diagrams to gain insights into how the system is designed and understand the relationships between different classes and modules.
+
 [UML Class Diagrams and Documentation](https://github.com/OlafDeckers/signal_projectSE/tree/master/uml_models)
