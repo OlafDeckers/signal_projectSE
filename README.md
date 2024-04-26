@@ -67,3 +67,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Project Members
 - Student ID: 6360302
 
+## Uml models
+[UML Class Diagrams and Documentation](https://github.com/OlafDeckers/signal_projectSE/tree/master/uml_models)
