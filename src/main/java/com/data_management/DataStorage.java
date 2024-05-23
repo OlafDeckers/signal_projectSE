@@ -24,26 +24,39 @@ public class DataStorage {
     }
 
     /**
-     * Adds or updates patient data in the storage.
-     * If the patient does not exist, a new Patient object is created and added to
-     * the storage.
-     * Otherwise, the new data is added to the existing patient's records.
+     * Retrieves a patient by their ID.
      *
-     * @param patientId        the unique identifier of the patient
-     * @param measurementValue the value of the health metric being recorded
-     * @param recordType       the type of record, e.g., "HeartRate",
-     *                         "BloodPressure"
-     * @param timestamp        the time at which the measurement was taken, in
-     *                         milliseconds since the Unix epoch
+     * @param patientId the ID of the patient to retrieve
+     * @return the Patient object associated with the given ID, or null if not found
      */
-    public void addPatientData(int patientId, double measurementValue, String recordType, long timestamp) {
-        Patient patient = patientMap.get(patientId);
-        if (patient == null) {
-            patient = new Patient(patientId);
-            patientMap.put(patientId, patient);
-        }
-        patient.addRecord(measurementValue, recordType, timestamp);
+    public Patient getPatient(int patientId) {
+        return patientMap.get(patientId);
     }
+
+    /**
+ * Adds or updates patient data in the storage.
+ * If the patient does not exist, a new Patient object is created and added to
+ * the storage.
+ * Otherwise, the new data is added to the existing patient's records.
+ *
+ * @param patientId             the unique identifier of the patient
+ * @param measurementValue      the value of the health metric being recorded
+ * @param recordType            the type of record, e.g., "HeartRate",
+ *                              "BloodPressure"
+ * @param timestamp             the time at which the measurement was taken, in
+ *                              milliseconds since the Unix epoch
+ * @param systolicBloodPressure the systolic blood pressure value
+ * @param diastolicBloodPressure the diastolic blood pressure value
+ */
+public void addPatientData(int patientId, double measurementValue, String recordType, long timestamp, double systolicBloodPressure, double diastolicBloodPressure) {
+    Patient patient = patientMap.get(patientId);
+    if (patient == null) {
+        patient = new Patient(patientId);
+        patientMap.put(patientId, patient);
+    }
+    patient.addRecord(measurementValue, recordType, timestamp, systolicBloodPressure, diastolicBloodPressure);
+}
+
 
     /**
      * Retrieves a list of PatientRecord objects for a specific patient, filtered by
