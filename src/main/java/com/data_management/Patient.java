@@ -24,6 +24,34 @@ public class Patient {
         this.patientRecords = new ArrayList<>();
     }
 
+    public int getPatientId() {
+        return patientId;
+    }
+
+    public long getMostRecentRecordTimestamp() {
+        if (patientRecords.isEmpty()) {
+            return 0;
+        }
+
+        long mostRecentTimestamp = patientRecords.get(0).getTimestamp();
+        for (PatientRecord record : patientRecords) {
+            long recordTimestamp = record.getTimestamp();
+            if (recordTimestamp > mostRecentTimestamp) {
+                mostRecentTimestamp = recordTimestamp;
+            }
+        }
+        return mostRecentTimestamp;
+    }
+
+    public long getNewestTimeStamp() {
+        if (patientRecords.isEmpty()) {
+            return 0;
+        }
+
+        long mostRecentTimestamp = patientRecords.get(0).getTimestamp();
+        return mostRecentTimestamp;
+    }
+
     /**
      * Adds a new record to this patient's list of medical records.
      * The record is created with the specified measurement value, record type, and
@@ -35,8 +63,10 @@ public class Patient {
      * @param timestamp        the time at which the measurement was taken, in
      *                         milliseconds since UNIX epoch
      */
-    public void addRecord(double measurementValue, String recordType, long timestamp) {
-        PatientRecord record = new PatientRecord(this.patientId, measurementValue, recordType, timestamp);
+    public void addRecord(double measurementValue, String recordType, long timestamp, double systolicBloodPressure,
+            double diastolicBloodPressure) {
+        PatientRecord record = new PatientRecord(this.patientId, measurementValue, recordType, timestamp,
+                systolicBloodPressure, diastolicBloodPressure);
         this.patientRecords.add(record);
     }
 
@@ -52,6 +82,13 @@ public class Patient {
      *         range
      */
     public List<PatientRecord> getRecords(long startTime, long endTime) {
-        // TODO Implement and test this method
+        List<PatientRecord> filteredRecords = new ArrayList<>();
+        for (PatientRecord record : patientRecords) {
+            long recordTime = record.getTimestamp();
+            if (recordTime >= startTime && recordTime <= endTime) {
+                filteredRecords.add(record);
+            }
+        }
+        return filteredRecords;
     }
 }
