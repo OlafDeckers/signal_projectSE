@@ -22,7 +22,7 @@ public class AlertGeneratorTest {
         AlertGenerator alertGenerator = new AlertGenerator(dataStorage);
 
         // Evaluate data for rapid drop alerts
-        alertGenerator.detectRapidDropAlerts(dataStorage.getPatient(1));
+        alertGenerator.evaluateData(dataStorage.getPatient(1));
 
         // Verify that alerts are triggered for rapid drop
         // Assert the presence of alerts in the triggeredAlerts list
