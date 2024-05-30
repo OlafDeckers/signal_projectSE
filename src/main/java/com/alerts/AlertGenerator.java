@@ -4,261 +4,177 @@ import com.data_management.DataStorage;
 import com.data_management.Patient;
 import com.data_management.PatientRecord;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.List;
 
-/**
- * The {@code AlertGenerator} class is responsible for monitoring patient data
- * and generating alerts when certain predefined conditions are met. This class
- * relies on a {@link DataStorage} instance to access patient data and evaluate
- * it against specific health criteria.
- */
 public class AlertGenerator {
+    @SuppressWarnings("unused")
     private DataStorage dataStorage;
-    private List<Alert> triggeredAlerts;
+    private List<Alert> alerts;
 
-    /**
-     * Constructs an {@code AlertGenerator} with a specified {@code DataStorage}.
-     * The {@code DataStorage} is used to retrieve patient data that this class
-     * will monitor and evaluate.
-     *
-     * @param dataStorage the data storage system that provides access to patient
-     *                    data
-     */
     public AlertGenerator(DataStorage dataStorage) {
         this.dataStorage = dataStorage;
-        this.triggeredAlerts = new ArrayList<>();
+        this.alerts = new ArrayList<>();
     }
 
     /**
-     * Retrieves the list of triggered alerts.
-     *
-     * @return the list of triggered alerts
-     */
-    public List<Alert> getTriggeredAlerts() {
-        return triggeredAlerts;
-    }
-
-    private void detectTrendAlerts(Patient patient, List<PatientRecord> records) {
-
-        if (records.size() < 3) {
-            // Not enough records for trend analysis
-            return;
-        }
-
-        for (int i = 2; i < records.size(); i++) {
-            PatientRecord current = records.get(i);
-            PatientRecord previous = records.get(i - 1);
-            PatientRecord prevPrev = records.get(i - 2);
-
-            double currentSystolic = current.getSystolicBloodPressure();
-            double prevSystolic = previous.getSystolicBloodPressure();
-            double prevPrevSystolic = prevPrev.getSystolicBloodPressure();
-
-            double currentDiastolic = current.getDiastolicBloodPressure();
-            double prevDiastolic = previous.getDiastolicBloodPressure();
-            double prevPrevDiastolic = prevPrev.getDiastolicBloodPressure();
-
-            // Checking for increasing trend
-            if (currentSystolic >= prevSystolic + 10 && prevSystolic >= prevPrevSystolic + 10) {
-                triggerAlert(
-                        new Alert(patient.getPatientId(), "Increasing Blood Pressure Trend", current.getTimestamp()));
-            }
-
-            if (currentDiastolic >= prevDiastolic + 10 && prevDiastolic >= prevPrevDiastolic + 10) {
-                triggerAlert(
-                        new Alert(patient.getPatientId(), "Increasing Blood Pressure Trend", current.getTimestamp()));
-            }
-
-            // Checking for decreasing trend
-            if (currentSystolic <= prevSystolic - 10 && prevSystolic <= prevPrevSystolic - 10) {
-                triggerAlert(
-                        new Alert(patient.getPatientId(), "Decreasing Blood Pressure Trend", current.getTimestamp()));
-            }
-
-            if (currentDiastolic <= prevDiastolic - 10 && prevDiastolic <= prevPrevDiastolic - 10) {
-                triggerAlert(
-                        new Alert(patient.getPatientId(), "Decreasing Blood Pressure Trend", current.getTimestamp()));
-            }
-        }
-    }
-
-    private void checkCriticalThresholds(Patient patient, List<PatientRecord> records) {
-
-        for (PatientRecord record : records) {
-            double systolic = record.getSystolicBloodPressure();
-            double diastolic = record.getDiastolicBloodPressure();
-
-            // Checking for systolic blood pressure above 180 mmHg or below 90 mmHg
-            if (systolic > 180 || systolic < 90) {
-                triggerAlert(
-                        new Alert(patient.getPatientId(), "Critical Systolic Blood Pressure", record.getTimestamp()));
-            }
-
-            // Checking for diastolic blood pressure above 120 mmHg or below 60 mmHg
-            if (diastolic > 120 || diastolic < 60) {
-                triggerAlert(
-                        new Alert(patient.getPatientId(), "Critical Diastolic Blood Pressure", record.getTimestamp()));
-            }
-        }
-    }
-
-    private void detectLowSaturationAlerts(Patient patient, List<PatientRecord> records) {
-
-        for (PatientRecord record : records) {
-            double saturation = record.getBloodSaturation();
-
-            // Checking for low saturation below 92%
-            if (saturation < 92) {
-                triggerAlert(new Alert(patient.getPatientId(), "Low Blood Saturation", record.getTimestamp()));
-            }
-        }
-    }
-
-    public void detectRapidDropAlerts(Patient patient, List<PatientRecord> records) {
-
-        for (int i = 1; i < records.size(); i++) {
-            PatientRecord current = records.get(i);
-            PatientRecord previous = records.get(i - 1);
-
-            double currentSaturation = current.getBloodSaturation();
-            double prevSaturation = previous.getBloodSaturation();
-
-            long currentTime = current.getTimestamp();
-            long prevTime = previous.getTimestamp();
-
-            // Checking for a drop of 5% or more within a 10-minute interval
-            if (prevSaturation - currentSaturation >= 5 && (currentTime - prevTime) <= 600000) {
-                triggerAlert(
-                        new Alert(patient.getPatientId(), "Rapid Drop in Blood Saturation", current.getTimestamp()));
-            }
-        }
-    }
-
-    private void detectHypotensiveHypoxemiaAlerts(Patient patient, List<PatientRecord> records) {
-
-        for (PatientRecord record : records) {
-            double systolicBP = record.getSystolicBloodPressure();
-            double saturation = record.getBloodSaturation();
-
-            // Checking for both conditions: systolic BP below 90 mmHg and saturation below
-            // 92%
-            if (systolicBP < 90 && saturation < 92) {
-                triggerAlert(new Alert(patient.getPatientId(), "Hypotensive Hypoxemia Alert", record.getTimestamp()));
-            }
-        }
-    }
-
-    private void detectAbnormalHeartRateAlerts(Patient patient, List<PatientRecord> records) {
-
-        for (PatientRecord record : records) {
-            double heartRate = record.getHeartRate();
-
-            // Checking for heart rate below 50 bpm or above 100 bpm
-            if (heartRate < 50 || heartRate > 100) {
-                triggerAlert(new Alert(patient.getPatientId(), "Abnormal Heart Rate Alert", record.getTimestamp()));
-            }
-        }
-    }
-
-    private void detectIrregularBeatAlerts(Patient patient, List<PatientRecord> records) {
-
-        for (PatientRecord record : records) {
-            // Assuming there is a method to detect irregular beat patterns in the record
-            boolean hasIrregularBeat = record.hasIrregularBeat();
-
-            // Triggering alert if irregular beat pattern detected
-            if (hasIrregularBeat) {
-                triggerAlert(new Alert(patient.getPatientId(), "Irregular Beat Alert", record.getTimestamp()));
-            }
-        }
-    }
-
-    /**
-     * Evaluates the specified patient's data to determine if any alert conditions
-     * are met. If a condition is met, an alert is triggered via the
-     * {@link #triggerAlert}
-     * method. This method should define the specific conditions under which an
-     * alert
-     * will be triggered.
-     *
-     * @param patient the patient data to evaluate for alert conditions
+     * Evaluates patient data to check for conditions that may trigger alerts.
+     * @param patient The patient whose data needs to be evaluated.
      */
     public void evaluateData(Patient patient) {
-        long endTime = patient.getMostRecentRecordTimestamp();// Current time
-        long startTime = patient.getNewestTimeStamp(); // 10 minutes before the current time
+        List<PatientRecord> records = patient.getRecords(0, System.currentTimeMillis());
 
+        for (PatientRecord record : records) {
+            evaluateHeartRate(patient, record);
+            evaluateBloodPressure(patient, record);
+            evaluateBloodSaturation(patient, record);
+            evaluateECG(patient, record);
+            evaluateHypotensiveHypoxemia(patient, records);
+        }
+
+        
+    }
+
+    private void evaluateHeartRate(Patient patient, PatientRecord record) {
+        if ("HeartRate".equals(record.getRecordType()) && record.getMeasurementValue() > 100) {
+            triggerAlert(patient.getPatientId(), "High Heart Rate", record.getTimestamp(), "Heart rate exceeds 100 bpm.");
+        }
+    }
+
+    private void evaluateBloodPressure(Patient patient, PatientRecord record) {
+        if ("Systolic".equals(record.getRecordType()) || "Diastolic".equals(record.getRecordType())) {
+            checkBloodPressureTrend(patient, record);
+            checkCriticalBloodPressureThreshold(patient, record);
+        }
+    }
+
+    private void checkBloodPressureTrend(Patient patient, PatientRecord record) {
+        List<PatientRecord> systolicRecords = getLastNRecords(patient, "Systolic", 3);
+        List<PatientRecord> diastolicRecords = getLastNRecords(patient, "Diastolic", 3);
+
+        if (systolicRecords.size() < 3 || diastolicRecords.size() < 3) return;
+
+        boolean increasingTrend = true;
+        boolean decreasingTrend = true;
+
+        for (int i = 1; i < systolicRecords.size(); i++) {
+            double previousSystolic = systolicRecords.get(i - 1).getMeasurementValue();
+            double currentSystolic = systolicRecords.get(i).getMeasurementValue();
+            double previousDiastolic = diastolicRecords.get(i - 1).getMeasurementValue();
+            double currentDiastolic = diastolicRecords.get(i).getMeasurementValue();
+
+            if (currentSystolic - previousSystolic <= 10 || currentDiastolic - previousDiastolic <= 10) increasingTrend = false;
+            if (previousSystolic - currentSystolic <= 10 || previousDiastolic - currentDiastolic <= 10) decreasingTrend = false;
+        }
+
+        if (increasingTrend) {
+            triggerAlert(patient.getPatientId(), "Increasing Blood Pressure Trend", record.getTimestamp(), "Blood pressure increasing trend over 3 consecutive readings.");
+        } else if (decreasingTrend) {
+            triggerAlert(patient.getPatientId(), "Decreasing Blood Pressure Trend", record.getTimestamp(), "Blood pressure decreasing trend over 3 consecutive readings.");
+        }
+    }
+
+    private void checkCriticalBloodPressureThreshold(Patient patient, PatientRecord record) {
+        double systolic = 0;
+        double diastolic = 0;
+        if ("Systolic".equals(record.getRecordType())) {
+            systolic = record.getMeasurementValue();
+        } else if ("Diastolic".equals(record.getRecordType())) {
+            diastolic = record.getMeasurementValue();
+        }
+
+        if (systolic > 180 || systolic < 90 || diastolic > 120 || diastolic < 60) {
+            triggerAlert(patient.getPatientId(), "Critical Blood Pressure", record.getTimestamp(), "Critical blood pressure levels detected.");
+        }
+    }
+
+    private void evaluateBloodSaturation(Patient patient, PatientRecord record) {
+        if ("Saturation".equals(record.getRecordType())) {
+            double value = record.getMeasurementValue();
+            if (value < 92) {
+                triggerAlert(patient.getPatientId(), "Low Blood Saturation", record.getTimestamp(), "Blood saturation below 92%.");
+            }
+            checkRapidSaturationDrop(patient, record);
+        }
+    }
+
+    private void checkRapidSaturationDrop(Patient patient, PatientRecord record) {
+        List<PatientRecord> saturationRecords = getRecordsWithinInterval(patient, "Saturation", record.getTimestamp() - 600000, record.getTimestamp());
+
+        if (saturationRecords.size() < 2) return;
+
+        double initial = saturationRecords.get(0).getMeasurementValue();
+        double current = saturationRecords.get(saturationRecords.size() - 1).getMeasurementValue();
+
+        if (initial - current >= 5) {
+            triggerAlert(patient.getPatientId(), "Rapid Blood Saturation Drop", record.getTimestamp(), "Blood saturation dropped by 5% or more within 10 minutes.");
+        }
+    }
+
+    private void evaluateECG(Patient patient, PatientRecord record) {
+        if ("ECG".equals(record.getRecordType()) && record.getMeasurementValue() > 1.5) {
+            triggerAlert(patient.getPatientId(), "Abnormal ECG", record.getTimestamp(), "ECG value exceeds 1.5 mV.");
+        }
+    }
+
+    private void evaluateHypotensiveHypoxemia(Patient patient, List<PatientRecord> records) {
+        boolean lowBloodPressure = false;
+        boolean lowBloodSaturation = false;
+
+        for (PatientRecord record : records) {
+            if ("Systolic".equals(record.getRecordType()) && record.getMeasurementValue() < 90) {
+                lowBloodPressure = true;
+            }
+            if ("Saturation".equals(record.getRecordType()) && record.getMeasurementValue() < 92) {
+                lowBloodSaturation = true;
+            }
+        }
+
+        if (lowBloodPressure && lowBloodSaturation) {
+            triggerAlert(patient.getPatientId(), "Hypotensive Hypoxemia", System.currentTimeMillis(), "Combined low blood pressure and low blood oxygen saturation detected.");
+        }
+    }
+
+    /**
+     * Triggers an alert if a specified condition is met.
+     * @param patientId The ID of the patient for whom the alert is being triggered.
+     * @param condition The condition that triggered the alert.
+     * @param timestamp The time at which the alert was triggered.
+     * @param message A message describing the alert condition.
+     */
+    private void triggerAlert(int patientId, String condition, long timestamp, String message) {
+        Alert alert = new Alert(String.valueOf(patientId), condition, timestamp);
+        alerts.add(alert);
+        System.out.println("Alert triggered: " + message);
+    }
+
+    /**
+     * Retrieves the list of alerts.
+     * @return A list of alerts.
+     */
+    public List<Alert> getAlerts() {
+        return new ArrayList<>(alerts);
+    }
+
+    private List<PatientRecord> getLastNRecords(Patient patient, String recordType, int n) {
+        List<PatientRecord> records = patient.getRecords(0, System.currentTimeMillis());
+        List<PatientRecord> filteredRecords = new ArrayList<>();
+        for (PatientRecord record : records) {
+            if (recordType.equals(record.getRecordType())) {
+                filteredRecords.add(record);
+            }
+        }
+        return filteredRecords.subList(Math.max(filteredRecords.size() - n, 0), filteredRecords.size());
+    }
+
+    private List<PatientRecord> getRecordsWithinInterval(Patient patient, String recordType, long startTime, long endTime) {
         List<PatientRecord> records = patient.getRecords(startTime, endTime);
-
-        if (!records.isEmpty()) {
-            if ("BloodPressure".equals(records.get(0).getRecordType())) {
-                detectTrendAlerts(patient, records);
-                checkCriticalThresholds(patient, records);
-            }
-
-            if ("BloodSaturation".equals(records.get(0).getRecordType())) {
-                detectLowSaturationAlerts(patient, records);
-                detectRapidDropAlerts(patient, records);
-                detectHypotensiveHypoxemiaAlerts(patient, records);
-            }
-               
-            if ("HeartRate".equals(records.get(0).getRecordType())) {
-                detectAbnormalHeartRateAlerts(patient, records);
-            }
-
-            if ("ECG".equals(records.get(0).getRecordType())) {
-                detectIrregularBeatAlerts(patient, records);
+        List<PatientRecord> filteredRecords = new ArrayList<>();
+        for (PatientRecord record : records) {
+            if (recordType.equals(record.getRecordType())) {
+                filteredRecords.add(record);
             }
         }
-    }
-
-    /**
-     * Triggers an alert for the monitoring system and adds it to the list of
-     * triggered alerts.
-     * This method can be extended to notify medical staff, log the alert, or
-     * perform other actions.
-     * The method currently assumes that the alert information is fully formed when
-     * passed as an argument.
-     *
-     * @param alert the alert object containing details about the alert condition
-     */
-    private void triggerAlert(Alert alert) {
-        System.out.println("Alert triggered for Patient " + alert.getPatientId() + ": "
-                + alert.getCondition() + " at " + alert.getTimestamp());
-        triggeredAlerts.add(alert);
-    }
-
-    /**
-     * Triggers a new alert based on external input from nurses or patients.
-     *
-     * @param patientId the ID of the patient for whom the alert is triggered
-     * @param condition the condition associated with the alert
-     * @param timestamp the time at which the alert was triggered
-     */
-    public void triggerNewAlert(int patientId, String condition, long timestamp) {
-        // Retrieve the patient from the data storage
-        Patient patient = dataStorage.getPatient(patientId);
-
-        // Check if the patient exists
-        if (patient != null) {
-            // Create a new alert and trigger it
-            Alert alert = new Alert(patientId, condition, timestamp);
-            triggeredAlerts.add(alert);
-            triggerAlert(alert);
-        } else {
-            // Patient not found, handle accordingly (e.g., log error)
-            System.err.println("Patient with ID " + patientId + " not found.");
-        }
-    }
-
-    /**
-     * Untriggers an existing triggered alert based on external events.
-     *
-     * @param patientId the ID of the patient for whom the alert is untriggered
-     * @param condition the condition associated with the triggered alert to be
-     *                  untriggered
-     */
-    public void untriggerAlert(int patientId, String condition) {
-        triggeredAlerts.removeIf(alert -> alert.getPatientId() == patientId && alert.getCondition().equals(condition));
+        return filteredRecords;
     }
 }
