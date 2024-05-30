@@ -1,13 +1,18 @@
 package com.data_management;
 
-import java.io.IOException;
-
+/**
+ * This file represents an interface for data readers in health monitoring simulations.
+ * Implementing classes define specific strategies for reading patient data.
+ */
 public interface DataReader {
+
     /**
-     * Reads data from a specified source and stores it in the data storage.
-     * 
+     * Connects to a WebSocket server to read data continuously and store it in the data storage.
+     *
      * @param dataStorage the storage where data will be stored
-     * @throws IOException if there is an error reading the data
+     * @param serverUri the URI of the WebSocket server
+     * @throws Exception if there is an error connecting to the server
      */
-    void readData(DataStorage dataStorage) throws IOException;
+    void readData(DataStorage dataStorage, String serverUri) throws Exception;
+
 }
