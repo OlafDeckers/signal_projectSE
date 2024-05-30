@@ -83,11 +83,7 @@ public class AlertGenerator {
         }
     }
 
-    private void checkCriticalThresholds(Patient patient) {
-        long endTime = patient.getMostRecentRecordTimestamp();
-        long startTime = patient.getNewestTimeStamp(); // 10 minutes before the current time
-
-        List<PatientRecord> records = patient.getRecords(startTime, endTime);
+    private void checkCriticalThresholds(Patient patient, List<PatientRecord> records) {
 
         for (PatientRecord record : records) {
             double systolic = record.getSystolicBloodPressure();
@@ -107,11 +103,7 @@ public class AlertGenerator {
         }
     }
 
-    private void detectLowSaturationAlerts(Patient patient) {
-        long endTime = patient.getMostRecentRecordTimestamp();
-        long startTime = patient.getNewestTimeStamp(); // 10 minutes before the current time
-
-        List<PatientRecord> records = patient.getRecords(startTime, endTime);
+    private void detectLowSaturationAlerts(Patient patient, List<PatientRecord> records) {
 
         for (PatientRecord record : records) {
             double saturation = record.getBloodSaturation();
@@ -123,11 +115,7 @@ public class AlertGenerator {
         }
     }
 
-    public void detectRapidDropAlerts(Patient patient) {
-        long endTime = patient.getMostRecentRecordTimestamp();
-        long startTime = patient.getNewestTimeStamp(); // 10 minutes before the current time
-
-        List<PatientRecord> records = patient.getRecords(startTime, endTime);
+    public void detectRapidDropAlerts(Patient patient, List<PatientRecord> records) {
 
         for (int i = 1; i < records.size(); i++) {
             PatientRecord current = records.get(i);
@@ -147,11 +135,7 @@ public class AlertGenerator {
         }
     }
 
-    private void detectHypotensiveHypoxemiaAlerts(Patient patient) {
-        long endTime = patient.getMostRecentRecordTimestamp();
-        long startTime = patient.getNewestTimeStamp(); // 10 minutes before the current time
-
-        List<PatientRecord> records = patient.getRecords(startTime, endTime);
+    private void detectHypotensiveHypoxemiaAlerts(Patient patient, List<PatientRecord> records) {
 
         for (PatientRecord record : records) {
             double systolicBP = record.getSystolicBloodPressure();
@@ -165,11 +149,7 @@ public class AlertGenerator {
         }
     }
 
-    private void detectAbnormalHeartRateAlerts(Patient patient) {
-        long endTime = patient.getMostRecentRecordTimestamp();
-        long startTime = patient.getNewestTimeStamp(); // 10 minutes before the current time
-
-        List<PatientRecord> records = patient.getRecords(startTime, endTime);
+    private void detectAbnormalHeartRateAlerts(Patient patient, List<PatientRecord> records) {
 
         for (PatientRecord record : records) {
             double heartRate = record.getHeartRate();
@@ -181,11 +161,7 @@ public class AlertGenerator {
         }
     }
 
-    private void detectIrregularBeatAlerts(Patient patient) {
-        long endTime = patient.getMostRecentRecordTimestamp();
-        long startTime = patient.getNewestTimeStamp(); // 10 minutes before the current time
-
-        List<PatientRecord> records = patient.getRecords(startTime, endTime);
+    private void detectIrregularBeatAlerts(Patient patient, List<PatientRecord> records) {
 
         for (PatientRecord record : records) {
             // Assuming there is a method to detect irregular beat patterns in the record
@@ -217,27 +193,22 @@ public class AlertGenerator {
         if (!records.isEmpty()) {
             if ("BloodPressure".equals(records.get(0).getRecordType())) {
                 detectTrendAlerts(patient, records);
-                checkCriticalThresholds(patient);
+                checkCriticalThresholds(patient, records);
             }
 
             if ("BloodSaturation".equals(records.get(0).getRecordType())) {
-                detectLowSaturationAlerts(patient);
-                detectRapidDropAlerts(patient);
-                detectHypotensiveHypoxemiaAlerts(patient);
+                detectLowSaturationAlerts(patient, records);
+                detectRapidDropAlerts(patient, records);
+                detectHypotensiveHypoxemiaAlerts(patient, records);
             }
                
             if ("HeartRate".equals(records.get(0).getRecordType())) {
-                detectAbnormalHeartRateAlerts(patient);
+                detectAbnormalHeartRateAlerts(patient, records);
             }
 
             if ("ECG".equals(records.get(0).getRecordType())) {
-                detectIrregularBeatAlerts(patient);
+                detectIrregularBeatAlerts(patient, records);
             }
-            // Check for Blood Saturation Alerts
-
-            // Check for ECG Alerts
-
-            // Check for Combined Alert: Hypotensive Hypoxemia
         }
     }
 
@@ -252,11 +223,8 @@ public class AlertGenerator {
      * @param alert the alert object containing details about the alert condition
      */
     private void triggerAlert(Alert alert) {
-        // Print the alert information to the console
         System.out.println("Alert triggered for Patient " + alert.getPatientId() + ": "
                 + alert.getCondition() + " at " + alert.getTimestamp());
-
-        // Add the triggered alert to the list of triggered alerts
         triggeredAlerts.add(alert);
     }
 
