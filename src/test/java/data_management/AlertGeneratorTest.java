@@ -192,4 +192,38 @@ class AlertGeneratorTest {
         assertEquals("Critical Blood Pressure", alerts.get(0).getCondition());
         assertEquals("Low Blood Saturation", alerts.get(1).getCondition());
     }
+
+    @Test
+    void testIncreasingBloodPressureTrendAlert() {
+        List<PatientRecord> records = Arrays.asList(
+                new PatientRecord(1, 110.0, "Systolic", System.currentTimeMillis() - 1200000),
+                new PatientRecord(1, 122.0, "Systolic", System.currentTimeMillis() - 600000),
+                new PatientRecord(1, 135.0, "Systolic", System.currentTimeMillis())
+        );
+        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+
+        alertGenerator.evaluateData(mockPatient);
+
+        List<Alert> alerts = alertGenerator.getAlerts();
+        assertEquals("Increasing Blood Pressure Trend", alerts.get(0).getCondition());
+    }
+
+    @Test
+    void testDecreasingBloodPressureTrendAlert() {
+        List<PatientRecord> records = Arrays.asList(
+                new PatientRecord(1, 140.0, "Systolic", System.currentTimeMillis() - 1200000),
+                new PatientRecord(1, 127.0, "Systolic", System.currentTimeMillis() - 600000),
+                new PatientRecord(1, 113.0, "Systolic", System.currentTimeMillis())
+        );
+        when(mockPatient.getRecords(anyLong(), anyLong())).thenReturn(records);
+
+        alertGenerator.evaluateData(mockPatient);
+
+        List<Alert> alerts = alertGenerator.getAlerts();
+        assertEquals("Decreasing Blood Pressure Trend", alerts.get(0).getCondition());
+    }
+
 }
+
+
+
