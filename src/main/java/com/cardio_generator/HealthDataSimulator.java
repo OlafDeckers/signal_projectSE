@@ -5,7 +5,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.cardio_generator.generators.AlertGenerator;
-
 import com.cardio_generator.generators.BloodPressureDataGenerator;
 import com.cardio_generator.generators.BloodSaturationDataGenerator;
 import com.cardio_generator.generators.BloodLevelsDataGenerator;
@@ -32,19 +31,43 @@ import java.util.ArrayList;
  * 
  */
 
- public class HealthDataSimulator {
-    
+public class HealthDataSimulator {
+
+    /** Singleton instance */
+    private static HealthDataSimulator instance;
+
     /** Default number of patients */
     private static int patientCount = 50;
-    
+
     /** Executor service for scheduling tasks */
-    private static ScheduledExecutorService scheduler;
-    
+    private ScheduledExecutorService scheduler;
+
     /** Default output strategy */
-    private static OutputStrategy outputStrategy = new ConsoleOutputStrategy();
-    
+    private OutputStrategy outputStrategy = new ConsoleOutputStrategy();
+
     /** Random number generator */
     private static final Random random = new Random();
+
+    /**
+     * Private constructor to prevent instantiation
+     */
+    private HealthDataSimulator() {}
+
+    /**
+     * Get the singleton instance of HealthDataSimulator
+     * 
+     * @return the singleton instance
+     */
+    public static HealthDataSimulator getInstance() {
+        if (instance == null) {
+            synchronized (HealthDataSimulator.class) {
+                if (instance == null) {
+                    instance = new HealthDataSimulator();
+                }
+            }
+        }
+        return instance;
+    }
 
     /**
      * The main entry point for the Health Data Simulator application.
@@ -54,14 +77,15 @@ import java.util.ArrayList;
      * @throws IOException if an I/O error occurs while parsing arguments or initializing output strategies.
      */
     public static void main(String[] args) throws IOException {
-        parseArguments(args);
+        HealthDataSimulator simulator = HealthDataSimulator.getInstance();
+        simulator.parseArguments(args);
 
-        scheduler = Executors.newScheduledThreadPool(patientCount * 4);
+        simulator.scheduler = Executors.newScheduledThreadPool(patientCount * 4);
 
-        List<Integer> patientIds = initializePatientIds(patientCount);
+        List<Integer> patientIds = simulator.initializePatientIds(patientCount);
         Collections.shuffle(patientIds); // Randomize the order of patient IDs
 
-        scheduleTasksForPatients(patientIds);
+        simulator.scheduleTasksForPatients(patientIds);
     }
 
     /**
@@ -85,7 +109,7 @@ import java.util.ArrayList;
      * @param args Command-line arguments passed to the application.
      * @throws IOException if an I/O error occurs while parsing arguments or initializing output strategies.
      */
-    private static void parseArguments(String[] args) throws IOException {
+    public void parseArguments(String[] args) throws IOException {
         for (int i = 0; i < args.length; i++) {
             switch (args[i]) {
                 case "-h":
@@ -149,7 +173,7 @@ import java.util.ArrayList;
      * 
      * @see #main(String[])
      */
-    private static void printHelp() {
+    private void printHelp() {
         System.out.println("Usage: java HealthDataSimulator [options]");
         System.out.println("Options:");
         System.out.println("  -h                       Show help and exit.");
@@ -174,7 +198,7 @@ import java.util.ArrayList;
      * @param patientCount The number of patients for which to generate IDs.
      * @return A list containing patient IDs from 1 to the specified count.
      */
-    private static List<Integer> initializePatientIds(int patientCount) {
+    private List<Integer> initializePatientIds(int patientCount) {
         List<Integer> patientIds = new ArrayList<>();
         for (int i = 1; i <= patientCount; i++) {
             patientIds.add(i);
@@ -190,7 +214,7 @@ import java.util.ArrayList;
      * 
      * @param patientIds The list of patient IDs for which to schedule data generation tasks.
      */
-    private static void scheduleTasksForPatients(List<Integer> patientIds) {
+    private void scheduleTasksForPatients(List<Integer> patientIds) {
         ECGDataGenerator ecgDataGenerator = new ECGDataGenerator(patientCount);
         BloodSaturationDataGenerator bloodSaturationDataGenerator = new BloodSaturationDataGenerator(patientCount);
         BloodPressureDataGenerator bloodPressureDataGenerator = new BloodPressureDataGenerator(patientCount);
@@ -216,7 +240,7 @@ import java.util.ArrayList;
      * @param period The time between successive task executions.
      * @param timeUnit The time unit for the initial delay and period.
      */
-    private static void scheduleTask(Runnable task, long period, TimeUnit timeUnit) {
+    private void scheduleTask(Runnable task, long period, TimeUnit timeUnit) {
         scheduler.scheduleAtFixedRate(task, random.nextInt(5), period, timeUnit);
     }
 }
