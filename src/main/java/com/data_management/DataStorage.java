@@ -16,7 +16,7 @@ public class DataStorage {
     // Concurrent HashMap to store patient records
     private final ConcurrentHashMap<Integer, Patient> patientMap; // Stores patient objects indexed by their unique patient ID.
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-    private static DataStorage storage;
+    private static volatile DataStorage instance;
 
     /**
      * Constructs a new instance of DataStorage, initializing the underlying storage structure.
@@ -29,13 +29,17 @@ public class DataStorage {
         patientMap.clear();
     }
 
-
     public static DataStorage getInstance() {
-        if (storage == null) {
-            storage = new DataStorage();
+        if (instance == null) {
+            synchronized (DataStorage.class) {
+                if (instance == null) {
+                    instance = new DataStorage();
+                }
+            }
         }
-        return storage;
+        return instance;
     }
+
     /**
      * Adds or updates patient data in the storage.
      * If the patient does not exist, a new Patient object is created and added to the storage.
@@ -151,7 +155,7 @@ public class DataStorage {
     public static void main(String[] args) {
         // DataReader is not defined in this scope, should be initialized appropriately.
         
-        DataStorage storage = new DataStorage();
+        DataStorage storage = DataStorage.getInstance();
 
         // Assuming the reader has been properly initialized and can read data into the storage
         // reader.readData(storage);
